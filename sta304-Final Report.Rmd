@@ -1,0 +1,415 @@
+---
+title: "Racial Discrimination Behind Bars: Evidence from CSC Risk Scores"
+author: "Jiang Anan"
+date: "19/12/2020"
+output:
+  pdf_document: 
+    latex_engine: xelatex
+  word_document: default
+  html_document: default
+abstract: "Recent anti-racism movements around the world have brought the existing systemic discrimination against visible minorities back to public notice. Inspired by the investigation of the potential biased federal inmates’ risk assessments documented in The Globe and Mail (Cardoso 2020), which reveals the discriminating practices on black and indigenous people, I followed the statistical methodology that the author published and attempt to reproduce the analysis. I study how race is associated with two particular risk indicators - the security level and reintegration score using Ordinal Logistic Regression. I present two main results. First, I find evidence that black men are more likely than white men to receive maximum security level scores and low reintegration potential score. Second, black and indigenous women are more likely than white women to end up with maximum security level. There is also higher possibility that black women would get a low reintegration potential score. These findings suggest that the racial discrimination creates inequality in prison and would have an impact on inmates’ time behind the bars."
+
+---
+
+```{r setup, include=FALSE}
+install.packages("tidyr", repos = "https://cran.rstudio.com" )
+install.packages("ggplot2 ", repos = "https://cran.rstudio.com" )
+install.packages("RColorBrewer", repos = "https://cran.rstudio.com" )
+install.packages('tinytex', repos = "https://cran.rstudio.com")
+install.packages("tidyverse", repos = "https://cran.rstudio.com" )
+install.packages("rlang", repos = "https://cran.rstudio.com" )
+library("RColorBrewer")
+library(ggplot2)
+library(data.table)
+library(dplyr)
+library(rlang)
+library(tidyverse)
+library(forcats)
+library(expss)
+library(MASS)
+library(pROC)
+```
+
+
+# Keywords
+Race, Discrimination, Prison, Risk Assessment, Ordinal Logistic Regression
+
+# 1. Introduction
+
+In 2020, worldwide anti-racism movements have raised awareness about discrimination against people of color. Racism has always been a social crisis. Persistent racial injustice represents the inequality in all aspects of people’s life, from education to healthcare, employment and justice system. With the analysis done by The Globe and Mail (Cardoso 2020), I looked into the systemic discrimination in prison. The author used inmates’ federal risk assessment as a measurable set of indicators for evaluating inequality behind bars. Security level and reintegration potential score are two specific risk indexes due to the impact they have on prisoners’ length of sentence in prison.
+
+In this paper I utilize the dataset obtained from The Globe and Mail (Cardoso 2020) to identify the relationship between race and risk indicators. I used ordinal logistic regression to build models on categorical risk indicators and three main races that are mentioned in the article.
+
+In section 2, I present the data collection and data cleaning process. Because of the access to limited amount of data and information, the data cleaning result is slightly different from the cleaned data which the article used. In section 4, I interpret the model and generate the results. It is shown that there are slight differences in analysis outcome between my results and the ones presented in the article. In discussion section, I clarify the potential causes of the difference and the validation of the model.
+
+# 2. Data Collection & Data Cleaning
+
+The data used in this paper is collected from The Globe and Mail (Cardoso 2020). The dataset contains detailed information on inmates’ demography and risk assessment indicators. The data cover the period from 2012 to 2018. The unit of observation in the data is the jail-enter record. The same inmate may enter the data for multiple times when he or she re-enter the prison. So there could be multiple entries for same person. For each entry, there is race, gender, age, sentence length, security level, reintegration potential, etc. I focus on the demographic information, security level and reintegration potential, which it is reasonable because security level and reintegration score are two major indicators, and reintegration score is calculated by taking dynamic need and static risk into account. Table I, II, III and IV provide the descriptive statistics of the gender ratio, indigenous people ratio and race ratio in the dataset, respectively .
+
+The approach is to focus on the effect of being black, indigenous or white on their risk assessment scores, summarized as two particular risk scores – security level and reintegration level. Therefore, I performed data cleaning on raw data and created a new dataset containing race, age, security level and reintegration potential for a more straight forward representation.
+Data cleaning process consists of categorizing races except white, indigenous and black into “other” category, removing entries with missing value in specific columns and split the dataset by gender into two subset – male dataset and female dataset, since the regression is run separately on male and female data.
+
+Graph I and graph II show the distribution of races under three ordered category in offender security level and reintegration potential, respectively.
+
+Table I uses pie chart to present the ratio of race in offender security level by levels. Table II present the ratio of three security levels by race. Table III shows the race ratio in different reintegration levels. Table IV shows the ratio of reintegration level in different races.
+
+# 3. Model
+
+The work of Tom Cardoso (2020) show that race is a important element that affects inmates’ risk assessment score. The approach is to examine whether being black or indigenous would bias the risk assessment process and to measure the bias prisoners face. I examine the effect of race on inmate’s security level and the effect of race on reintegration score.
+
+The offender’s security level is based on three factors: how the offender will adjust to the institution, the risk of escape and public safety (CSC 2019). It is set to three classification from minimum to maximum. Maximum security level is described as the worst score, leading to locating at a maximum security institution or a longer time behind bars. The reintegration score is the likelihood of successfully re- entering society without committing a new offence. It is organized into three level- high, medium and low, with low being the worst score (Cardoso 2020).
+
+The outcome variables- security level and reintegration potential are categorical but also they follow an order from a low level to a high level on Likert scale. Thus, I use ordinal logistic regression model to analyze the effect of race. The first model is examining the effect of race on offender security level. The offender security levels are ordered from minimum to maximum.
+
+The Y variable is the ordinal outcome offender security level, which is set to three level- minimum, medium and maximum. In equation (1), 𝑃(𝑌 ≤ 1) is the cumulative probability of being placed in minimum security level. The right hand side of equation (1) can be interpreted as the log odds of receiving a minimum security classification. The right hand side of equation (2) can be interpreted as the log odds of receiving a minimum or medium security classification versus receiving a maximum security classification.
+
+The second model is to examine the effect of race on reintegration potential, with reintegration score being the dependent variable. The reintegration potential categories are ordered from low to high.
+
+The Y variable is the ordinal outcome reintegration potential score, which is set to three level- low, medium and high. In equation (3), 𝑃(𝑍 ≤ 1) is the probability of being placed in low reintegration potential level. The right hand side of equation (3) can be interpreted as the log odds of receiving a low reintegration potential classification. The right hand side of equation (4) can be interpreted as the log odds of receiving a low or medium reintegration potential level versus receiving a high reintegration potential level.
+
+In this set-up, I ran the both two models on male and female dataset and we can infer the effect of race on inmates’ risk assessment score.
+
+# 4. Results
+
+In this section, I will present the findings from the models I ran in section 3. First I analyze the effect of race on security level score. Then I analyze how race effects the reintegration potential score.
+
+For the first model, I set the reference level as white people with medium reintegration potential score. As shown in Table V, the coefficients of black and indigenous are 0.22 and -0.19, respectively. It means that black men are more likely to receive a maximum security classification and indigenous men are more likely to receive a minimum security classification compared to white men. In Table VI, for black men, the odds of being placed in maximum security category is 1.25 times (i.e. 24.52% more likely) that of white men, holding all other variables constant. For indigenous men, the odds of being placed in maximum security category is 17% lower than white men, holding all other variables constant.
+
+For female inmates, both black women and indigenous women are more likely to receive maximum security classification compared to white women. The odds of being more likely to receive a maximum security classification for black women and indigenous women are 1.07 (i.e. 7% more likely) and 1.48 (i.e. 48% more likely) times that of white women, respectively. And all the results are statistically significant based on the valid p-values.
+
+The second model shows the association of race and reintegration potential. The reference level is set as white people with medium offender security level. In Table IX, the coefficient of black is 0.09 and the coefficient of indigenous is -0.58, which indicates that black men are more likely to receive a high reintegration score, and indigenous men are more likely to receive a low reintegration score, holding all other variables constant. The odds of ending up with a high reintegration score for black men is 9.22% higher than that of white men. The odds of ending up with a high reintegration score for indigenous men is 43.78% lower than that of white men. The patterns are the same for female inmates, with black women being 33.19% more likely to receive a high reintegration score and indigenous women being 31.34% less likely to receive a high reintegration score.
+
+# 5. Discussion
+
+While anti-racism social activities are gaining more and more attention in recent years, there is still discrimination against people of color in all kinds of fields of life. In this paper, I address the effect of race on inmates’ risk scores by analyzing data collected from Correctional Service of Canada covering seven-year entries from 2012 to 2018.
+
+This inmates’ risk assessment dataset is consist of various of categorical variables and some numeric variables. The characteristic of variables inspired me to use ordinal logistic regression to fit the model. The results of the regression are all statistically significant at a 5% level. And I use AUC to measure the test performance. AUC results are included in the Appendix.
+
+As shown in section 4, in ordinal logistic regression, we can see the bias that prisoners face are solely based on their races. For offender security level, both black men and women are more likely to receive a maximum security classification compared to white people, while indigenous men are less likely to be placed in maximum classification but indigenous women are facing the same bias as black women. When we look into the race bias in reintegration level, it is found surprisingly that black men and women are more likely to receive high reintegration score compared to white men. Although things are opposite for indigenous people, indigenous people regardless of their gender, are more likely to have low reintegration score.
+
+The direction of the effect from my analysis is similar to the results from the article (Cardoso 2020). But there are slight differences in the magnitudes of the effect, which I believe is caused by the data cleaning process. With limited information about the risk score system, I can’t look into the score calculation process, which might lead to collinearity. And there is no information about inmates’ re-entering record, which would make me not be able to filter out certain entries like what the author did in the article (Cardoso 2020).
+
+This study is an evidence of the existing of racial discrimination in governmental justice system. I believe this study will be an insightful information for discovering and understanding the racial discrimination and improvement of greater racial and ethnic diversity.
+
+```{r}
+
+#Load data
+
+data <- read.csv("/cloud/project/The_Globe_and_Mail_CSC_OMS_2012-2018_20201022235635.csv")
+
+# Data cleaning
+
+# Get sex/ethnicity ratio table
+
+datagender <- as.data.frame(cro_cpct(data$GENDER))
+colnames(datagender) <- c("Gender","Percentage")
+datagender <- datagender[1:2,]
+(datagender[1:2,1] <- c("Female","Male"))
+print(datagender)
+
+dataindigenous <- as.data.frame(cro_cpct(data$RACE.GROUPING))
+colnames(dataindigenous) <- c("Indigenous","Percentage")
+dataindigenous <- dataindigenous[1:2,]
+(dataindigenous[1:2,1] <- c("Indigenous","Non Indigenous"))
+print(dataindigenous)
+
+datarace <- as.data.frame(cro_cpct(data$RACE))
+colnames(datarace) <- c("Race","Percentage")
+datarace <- datarace[1:3,]
+(datarace[1:3,1] <- c("White","Black","Indigenous"))
+print(datarace)
+
+# Get race groups for indigenous
+t_indig <- as.data.frame.matrix(table(data[ , c("RACE" , "RACE.GROUPING")]))
+(rownames(t_indig)[t_indig$Indigenous != 0])
+
+# Factor other races into "other" category
+racetokeep <- c("White", "Black", "Inuit", "Metis","North American")
+
+data$RACE <- fct_other(data$RACE, keep = racetokeep, other_level = 'other')
+
+# Factor Indigenous to "Indigenous" category
+data$RACE <- factor(data$RACE,levels = c("White", "Black", "Inuit", "Metis", "North American"),labels = c("White", "Black", "Indigenous","Indigenous","Indigenous"))
+
+# Remove missing value
+data[data==""]<-NA
+final <- na.omit(data)
+
+completeFun <- function(data, desiredCols) {
+  completeVec <- complete.cases(data[, desiredCols])
+  return(data[completeVec, ])
+}
+
+cleandata <- completeFun(data, c("RACE", "GENDER", "AGE", "OFFENDER.SECURITY.LEVEL","DYNAMIC.NEED","STATIC.RISK","REINTEGRATION.POTENTIAL" ))
+
+         
+# Split the dataframe based on gender into "male" and "female"
+list1<-split(cleandata, cleandata$GENDER)
+
+male_df <- as.data.frame(list1[['MALE']])
+female_df <- as.data.frame(list1[['FEMALE']])
+
+
+# View data in a simpler table
+select <- dplyr::select 
+easy<-select(cleandata, OFFENDER.SECURITY.LEVEL, RACE, AGE, REINTEGRATION.POTENTIAL)
+
+
+# 1.Run the ordinal logistic regression：race & security level
+
+# Make sure the dependent variable's categories are ordered from min to max
+male_df$OFFENDER.SECURITY.LEVEL = factor(male_df$OFFENDER.SECURITY.LEVEL, levels = c("MINIMUM", "MEDIUM", "MAXIMUM"), ordered = TRUE)
+
+# Male
+race_secruitylevel_male <- polr(OFFENDER.SECURITY.LEVEL ~ RACE + AGE + REINTEGRATION.POTENTIAL, data = male_df, Hess=TRUE) 
+
+# Make sure the dependent variable's categories are ordered from min to max
+female_df$OFFENDER.SECURITY.LEVEL = factor(female_df$OFFENDER.SECURITY.LEVEL, levels = c("MINIMUM", "MEDIUM", "MAXIMUM"), ordered = TRUE)
+
+#Female
+race_secruitylevel_female <- polr(OFFENDER.SECURITY.LEVEL ~ RACE + AGE + REINTEGRATION.POTENTIAL, data = female_df, Hess=TRUE) 
+
+
+# Get table
+(ctable1_male <- coef(summary(race_secruitylevel_male)))
+(ctable1_female <- coef(summary(race_secruitylevel_female)))
+
+# Calculate p-value & add p-value to the table
+p1 <- pnorm(abs(ctable1_male[, "t value"]), lower.tail = FALSE) * 2
+(ctable1_male <- cbind(ctable1_male, "p value" = p1))
+
+p2 <- pnorm(abs(ctable1_female[, "t value"]), lower.tail = FALSE) * 2
+(ctable1_female <- cbind(ctable1_female, "p value" = p2))
+
+# Odds ratios
+exp(coef(race_secruitylevel_male))
+exp(coef(race_secruitylevel_female))
+
+
+# 2.Run the ordinal logistic regression：race & reintegration level
+
+# Male
+# Make sure the dependent variable's categories are ordered from low to high
+male_df$REINTEGRATION.POTENTIAL = factor(male_df$REINTEGRATION.POTENTIAL, levels = c("LOW", "MEDIUM", "HIGH"), ordered = TRUE)
+
+race_reintegrationlevel_male <- polr(REINTEGRATION.POTENTIAL ~ RACE + AGE + OFFENDER.SECURITY.LEVEL, data = male_df, Hess=TRUE) 
+
+# Female
+# Make sure the dependent variable's categories are ordered from low to high
+female_df$REINTEGRATION.POTENTIAL = factor(female_df$REINTEGRATION.POTENTIAL, levels = c("LOW", "MEDIUM", "HIGH"), ordered = TRUE)
+
+race_reintegrationlevel_female <- polr(REINTEGRATION.POTENTIAL ~ RACE + AGE + OFFENDER.SECURITY.LEVEL, data = female_df, Hess=TRUE) 
+
+summary(race_reintegrationlevel_male)
+summary(race_reintegrationlevel_female)
+
+# Get table
+(ctable2_male <- coef(summary(race_reintegrationlevel_male)))
+(ctable2_female <- coef(summary(race_reintegrationlevel_female)))
+
+# Calculate p-value & add p-value to the table
+p3 <- pnorm(abs(ctable2_male[, "t value"]), lower.tail = FALSE) * 2
+(ctable2_male <- cbind(ctable2_male, "p value" = p3))
+
+p4 <- pnorm(abs(ctable2_female[, "t value"]), lower.tail = FALSE) * 2
+(ctable2_female <- cbind(ctable2_female, "p value" = p4))
+
+# Odds ratios
+
+exp(coef(race_reintegrationlevel_male))
+exp(coef(race_reintegrationlevel_female))
+
+### Offender Security Level
+
+# Race proportion in Max Offender Security Level
+max_racevsecurity_prop_df <- data.frame(prop.table(table(cleandata[ , c("OFFENDER.SECURITY.LEVEL" , "RACE") ] )[2,]))
+
+setDT(max_racevsecurity_prop_df, keep.rownames = TRUE)[]
+
+colnames(max_racevsecurity_prop_df) <- c("Race","Proportion")
+
+print(max_racevsecurity_prop_df)
+
+
+pie(max_racevsecurity_prop_df$Proportion, labels = max_racevsecurity_prop_df$Race, main = "Race Proportion in Max Level Offender Security Level", col=brewer.pal(n = 3, name = "Pastel1"))
+
+
+# Race proportion in Medium Offender Security Level
+med_racevsecurity_prop_df <- data.frame(prop.table(table(cleandata[ , c("OFFENDER.SECURITY.LEVEL" , "RACE") ] )[3,]))
+
+
+setDT(med_racevsecurity_prop_df, keep.rownames = TRUE)[]
+
+colnames(med_racevsecurity_prop_df) <- (c("Race","Proportion"))
+
+print(med_racevsecurity_prop_df)
+
+pie(med_racevsecurity_prop_df$Proportion, labels = med_racevsecurity_prop_df$Race, main = "Race Proportion in Med Level Offender Security Level", col=brewer.pal(n = 3, name = "Pastel1"))
+
+
+# Race proportion in Min Offender Security Level
+min_racevsecurity_prop_df <- data.frame(prop.table(table(cleandata[ , c("OFFENDER.SECURITY.LEVEL" , "RACE") ] )[4,]))
+
+setDT(min_racevsecurity_prop_df, keep.rownames = TRUE)[]
+
+colnames(min_racevsecurity_prop_df) <- (c("Race","Proportion"))
+
+print(min_racevsecurity_prop_df)
+
+pie(min_racevsecurity_prop_df$Proportion, labels = min_racevsecurity_prop_df$Race, main = "Race Proportion in Min Level Offender Security Level", col=brewer.pal(n = 3, name = "Pastel1"))
+
+# White 
+white <- data.frame(prop.table(table(cleandata[ , c("OFFENDER.SECURITY.LEVEL" , "RACE") ] )[,1]))
+
+setDT(white, keep.rownames = TRUE)[]
+
+colnames(white) <- (c("Offender.Security.Level","Proportion"))
+
+white <- filter(white, Proportion != "0")
+
+print(white)
+
+pie(white$Proportion, labels = white$Offender.Security.Level, main = "White Inmates Offender Security Level", col=brewer.pal(n = 3, name = "Pastel1"))
+
+# Black
+
+black <- data.frame(prop.table(table(cleandata[ , c("OFFENDER.SECURITY.LEVEL" , "RACE") ] )[,2]))
+
+setDT(black, keep.rownames = TRUE)[]
+
+colnames(black) <- (c("Offender.Security.Level","Proportion"))
+
+black <- filter(black, Proportion != "0")
+
+print(black)
+
+pie(black$Proportion, labels = black$Offender.Security.Level, main = "Black Inmates Offender Security Level", col=brewer.pal(n = 3, name = "Pastel1"))
+
+# Indigenous
+
+indigenous <- data.frame(prop.table(table(cleandata[ , c("OFFENDER.SECURITY.LEVEL" , "RACE") ] )[,3]))
+
+setDT(indigenous, keep.rownames = TRUE)[]
+
+colnames(indigenous) <- (c("Offender.Security.Level","Proportion"))
+
+indigenous <- filter(indigenous, Proportion != "0")
+
+print(indigenous)
+
+pie(indigenous$Proportion, labels = indigenous$Offender.Security.Level, main = "Indigenous Inmates Offender Security Level", col=brewer.pal(n = 3, name = "Pastel1"))
+
+### Reintegration Potential
+
+# Race proportion in Low Reintegration Potential
+low_racevreintegration_prop_df <- data.frame(prop.table(table(cleandata[ , c("REINTEGRATION.POTENTIAL" , "RACE") ] )[3,]))
+
+setDT(low_racevreintegration_prop_df, keep.rownames = TRUE)[]
+
+colnames(low_racevreintegration_prop_df) <- c("Race","Proportion")
+
+print(low_racevreintegration_prop_df)
+
+pie(low_racevreintegration_prop_df$Proportion, labels = low_racevreintegration_prop_df$Race, main = "Race Proportion in Low Reintegration Potential", col=brewer.pal(n = 3, name = "Pastel1"))
+
+# Race proportion in Medium Reintegration Potential
+med_racevreintegration_prop_df <- data.frame(prop.table(table(cleandata[ , c("REINTEGRATION.POTENTIAL" , "RACE") ] )[4,]))
+
+
+setDT(med_racevreintegration_prop_df, keep.rownames = TRUE)[]
+
+colnames(med_racevreintegration_prop_df) <- (c("Race","Proportion"))
+
+print(med_racevreintegration_prop_df)
+
+pie(med_racevreintegration_prop_df$Proportion, labels = med_racevreintegration_prop_df$Race, main = "Race Proportion in Med Reintegration Potential", col=brewer.pal(n = 3, name = "Pastel1"))
+
+
+# Race proportion in High Reintegration Potential
+high_racevreintegration_prop_df <- data.frame(prop.table(table(cleandata[ , c("REINTEGRATION.POTENTIAL" , "RACE") ] )[2,]))
+
+setDT(high_racevreintegration_prop_df, keep.rownames = TRUE)[]
+
+colnames(high_racevreintegration_prop_df) <- (c("Race","Proportion"))
+
+print(high_racevreintegration_prop_df)
+
+pie(high_racevreintegration_prop_df$Proportion, labels = high_racevreintegration_prop_df$Race, main = "Race Proportion in High Reintegration Potential", col=brewer.pal(n = 3, name = "Pastel1"))
+
+# White 
+white2 <- data.frame(prop.table(table(cleandata[ , c("REINTEGRATION.POTENTIAL" , "RACE") ] )[,1]))
+
+setDT(white2, keep.rownames = TRUE)[]
+
+colnames(white2) <- (c("Reintegration.Potential","Proportion"))
+
+white2 <- filter(white2, Proportion != "0")
+
+print(white2)
+
+pie(white2$Proportion, labels = white2$Reintegration.Potential, main = "White Inmates Reintegration Potential", col=brewer.pal(n = 3, name = "Pastel1"))
+
+# Black
+
+black2 <- data.frame(prop.table(table(cleandata[ , c("REINTEGRATION.POTENTIAL" , "RACE") ] )[,2]))
+
+setDT(black2, keep.rownames = TRUE)[]
+
+colnames(black2) <- (c("Offender.Security.Level","Proportion"))
+
+black2 <- filter(black2, Proportion != "0")
+
+print(black2)
+
+pie(black2$Proportion, labels = black2$Offender.Security.Level, main = "Black Inmates Reintegration Potential", col=brewer.pal(n = 3, name = "Pastel1"))
+
+# Indigenous
+
+indigenous2 <- data.frame(prop.table(table(cleandata[ , c("REINTEGRATION.POTENTIAL" , "RACE") ] )[,3]))
+
+setDT(indigenous2, keep.rownames = TRUE)[]
+
+colnames(indigenous2) <- (c("Offender.Security.Level","Proportion"))
+
+indigenous2 <- filter(indigenous2, Proportion != "0")
+
+print(indigenous2)
+
+pie(indigenous2$Proportion, labels = indigenous2$Offender.Security.Level, main = "Indigenous Inmates Reintegration Potentia", col=brewer.pal(n = 3, name = "Pastel1"))
+
+
+```
+
+## Including Plots
+
+
+```{r pressure, echo=FALSE}
+
+#Get table
+racevsecurity_df <- data.frame(table(cleandata[ , c("OFFENDER.SECURITY.LEVEL" , "RACE")]))
+racevsecurity_df <- filter(racevsecurity_df, Freq != "0")
+
+racevreintegration_df <- data.frame(table(cleandata[ , c("REINTEGRATION.POTENTIAL" , "RACE")]))
+racevreintegration_df <- filter(racevreintegration_df, Freq != "0")
+
+#Bar chart
+ggplot(racevsecurity_df, aes(fill=RACE, y=Freq, x=OFFENDER.SECURITY.LEVEL)) + 
+    geom_bar(position="dodge", stat="identity") 
+    
+
+ggplot(racevreintegration_df, aes(fill=RACE, y=Freq, x=REINTEGRATION.POTENTIAL)) + 
+    geom_bar(position="dodge", stat="identity")
+
+
+
+# AUC
+multiclass.roc(male_df$OFFENDER.SECURITY.LEVEL, race_secruitylevel_male$fitted.values, plot = TRUE,legacy.axes=TRUE, percent = TRUE,xlab="False Positive Percentage", ylab="True Positive Percentage", col="#377eb8", lwd=4, print.auc=TRUE)
+
+multiclass.roc(female_df$OFFENDER.SECURITY.LEVEL, race_secruitylevel_female$fitted.values, plot = TRUE,legacy.axes=TRUE, percent = TRUE,xlab="False Positive Percentage", ylab="True Positive Percentage", col="#377eb8", lwd=4, print.auc=TRUE)
+
+multiclass.roc(male_df$REINTEGRATION.POTENTIAL, race_reintegrationlevel_male$fitted.values, plot = TRUE,legacy.axes=TRUE, percent = TRUE,xlab="False Positive Percentage", ylab="True Positive Percentage", col="#377eb8", lwd=4, print.auc=TRUE)
+
+multiclass.roc(female_df$REINTEGRATION.POTENTIA, race_reintegrationlevel_female$fitted.values, plot = TRUE,legacy.axes=TRUE, percent = TRUE,xlab="False Positive Percentage", ylab="True Positive Percentage", col="#377eb8", lwd=4, print.auc=TRUE)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
